@@ -8,5 +8,6 @@ datasets==2.15.0
 tiktoken==0.4.0
 z3-solver==4.15.1.0
 anthropic
-mistralai
+mistralai==0.1.8
 pandas
+dotenv==0.9.9
