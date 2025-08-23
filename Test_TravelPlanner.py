@@ -280,6 +280,7 @@ def pipeline(query, mode, model, index, model_version = None):
                     print('!!!!!!!!!!KEY!!!!!!!!!!\n', key, '\n')
                     prompt = step_to_code_prompts[key]
                     step_key = key
+                    
             start = time.time()
             if model == 'gpt': code = GPT_response(prompt + lines, model_version)
             elif model == 'claude': code = Claude_response(prompt + lines)
@@ -290,6 +291,7 @@ def pipeline(query, mode, model, index, model_version = None):
             code = code.replace('```python', '')
             code = code.replace('```', '')
             code = code.replace('\_', '_')
+
             if step_key != 'Destination cities': 
                 if query_json['days'] == 3:
                     code = code.replace('\n', '\n    ')
@@ -334,10 +336,10 @@ def run_code(mode, user_mode, index):
     success = False
 
     with open(path+'plans/' + 'query.json', 'r') as f:
-      query_json = json.loads(f.read())
+        query_json = json.loads(f.read())
     f.close()
     with open(path+'codes/' + 'codes.txt', 'r') as f:
-      codes = f.read()
+        codes = f.read()
     f.close()
     local_vars = locals()
     start = time.time()
@@ -366,12 +368,9 @@ if __name__ == '__main__':
     with get_openai_callback() as cb:
         
         for number in tqdm(numbers[:]):
-            if(number != 34):
-                continue
             path =  f'output/{args.set_type}/{args.model_name}/{number}/plans/'
             if not os.path.exists(path + 'plan.txt'):
                 print(number)
                 query = query_data_list[number-1]['query']
-                query = "Could you devise a 3-day travel plan for 2 people departing Houston and heading to Fayetteville from March 20th to March 22nd, 2022, with a budget of $1,500? It is vital that our accommodations allow kids under the age of 10 as we will be traveling with kids. We prefer non-self-driving transportation and expect to experience a blend of American, Mediterranean, French, and Chinese cuisines during our stay."
                 print(query)
                 result_plan = pipeline(query, args.set_type, args.model_name, number, "gpt-4o") #'gpt', 'claude', 'mixtral'
