@@ -8,6 +8,10 @@ Create a conda environment and install dependency:
 conda create -n fmtravelplanner python=3.9
 conda activate fmtravelplanner
 pip install -r requirements.txt
+
+## change the env accordingly
+
+powershell run.ps1
 ```
 
 To run satisfiable plan generation experiment, refer to paper "TravelPlanner: A Benchmark for Real-World Planning with Language Agents" and their github repo to download their database and train/validation/test set.
