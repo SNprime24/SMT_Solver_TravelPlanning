@@ -80,4 +80,3 @@ def Mixtral_response(messages, mode = 'normal'):
   )
   # import pdb; pdb.set_trace()
   return chat_response.choices[0].message.content
-
