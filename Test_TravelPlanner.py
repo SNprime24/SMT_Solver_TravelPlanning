@@ -14,6 +14,7 @@ from tqdm import tqdm
 from datasets import load_dataset
 from z3 import *
 from openai_func import *
+from open_source_models import *
 from typing import List, Dict, Any
 
 from langchain.chat_models import ChatOpenAI
@@ -181,7 +182,7 @@ def generate_as_plan(s, variables, query):
     return f'Destination cities: {cities},\nTransportation dates: {departure_dates},\nTransportation methods between cities: {transportation_info},\nRestaurants (3 meals per day): {restaurant_city_list},\nAttractions (1 per day): {attraction_city_list},\nAccommodations (1 per city): {accommodation_city_list}'
 
 def pipeline(query, mode, model, index, model_version = None):
-    path =  f'output/{mode}/gpt_nl/{index}/'
+    path =  f'output/{mode}/{model}_nl/{index}/'
     if not os.path.exists(path):
         os.makedirs(path)
         os.makedirs(path+'codes/')
@@ -242,6 +243,8 @@ def pipeline(query, mode, model, index, model_version = None):
         if model == 'gpt': query_json = json.loads(GPT_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n', model_version).replace('```json', '').replace('```', ''))
         elif model == 'claude': query_json = json.loads(Claude_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n').replace('```json', '').replace('```', ''))
         elif model == 'mixtral': query_json = json.loads(Mixtral_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n', 'json').replace('```json', '').replace('```', '')) 
+        elif model == 'qwen': query_json = json.loads(LLMWrapper("qwen").generate("You are JSON generator so only generate JSON" + query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n').replace('```json', '').replace('```', ''))
+        elif model == 'phi': query_json = json.loads(LLMWrapper("phi").generate("You are JSON generator so only generate JSON" + query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n').replace('```json', '').replace('```', ''))
         else: ...
         
         with open(path+'plans/' + 'query.txt', 'w') as f:
@@ -257,6 +260,8 @@ def pipeline(query, mode, model, index, model_version = None):
         if model == 'gpt': steps = GPT_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n', model_version)
         elif model == 'claude': steps = Claude_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n')
         elif model == 'mixtral': steps = Mixtral_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n')
+        elif model == 'qwen': steps = LLMWrapper("qwen").generate(constraint_to_step_prompt + query + '\n' + 'Steps:\n')
+        elif model == 'phi': steps = LLMWrapper("phi").generate(constraint_to_step_prompt + query + '\n' + 'Steps:\n')
         else: ...
         json_step = time.time()
         times.append(json_step - start)
@@ -285,6 +290,8 @@ def pipeline(query, mode, model, index, model_version = None):
             if model == 'gpt': code = GPT_response(prompt + lines, model_version)
             elif model == 'claude': code = Claude_response(prompt + lines)
             elif model == 'mixtral': code = Mixtral_response(prompt +'\nRespond with python codes only, do not add \ in front of symbols like _ or *.\n Follow the indentation of provided examples carefully, indent after for-loops!\n' +lines, 'code') # '\nRespond json with python codes only\n' 
+            elif model == 'qwen': code = LLMWrapper("qwen").generate(prompt +'\nRespond with python codes only, do not add \ in front of symbols like _ or *.\n Follow the indentation of provided examples carefully, indent after for-loops!\n' +lines, 'code') # '\nRespond json with python codes only\n'
+            elif model == 'phi': code = LLMWrapper("phi").generate(prompt +'\nRespond with python codes only, do not add \ in front of symbols like _ or *.\n Follow the indentation of provided examples carefully, indent after for-loops!\n' +lines, 'code') # '\nRespond json with python codes only\n'
             else: ...
             step_code = time.time()
             times.append(step_code - start)
