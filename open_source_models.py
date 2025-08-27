@@ -1,6 +1,6 @@
 import os
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 
 class LLMWrapper:
@@ -8,7 +8,7 @@ class LLMWrapper:
     SUPPORTED_MODELS = {
         "llama": "meta-llama/Llama-2-7b-chat-hf",
         "qwen": "Qwen/Qwen2.5-7B-Instruct",
-        "phi": "microsoft/Phi-4-mini-instruct"
+        "phi": "microsoft/Phi-4"
     }
 
     def __init__(self, model_key: str = "llama", device: str = None):
@@ -21,7 +21,7 @@ class LLMWrapper:
         print(self.device)
 
         if self.model_name in self._model_cache:
-            self.pipeline = self._model_cache[self.model_name]
+            self.tokenizer, self.model = self._model_cache[self.model_name]
             print(f"Loaded {self.model_name} from cache.")
             return
 
@@ -32,53 +32,56 @@ class LLMWrapper:
             self.model_name,
             torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
             device_map="auto" if self.device == "cuda" else None,
-            offload_folder="offload",  # Enables CPU offloading
-            attn_implementation="flash_attention_2",  # Speeds up inference
             trust_remote_code=True
         )
 
-        pipe = pipeline(
-            "text-generation",
-            model=model,
-            tokenizer=tokenizer,
-            device=0 if self.device == "cuda" else -1
-        )
-
-        self.pipeline = pipe
-        self._model_cache[self.model_name] = pipe  # save in cache
+        self.tokenizer = tokenizer
+        self.model = model
+        self._model_cache[self.model_name] = (tokenizer, model)
 
     def generate(
         self,
         prompt: str,
         max_new_tokens: int = 3072,
-        temperature: float = 0.7,
+        temperature: float = 0,
     ) -> str:
+        messages = [{"role": "user", "content": prompt}]
+        inputs = self.tokenizer.apply_chat_template(
+            messages,
+            add_generation_prompt=True,
+            tokenize=True,
+            return_dict=True,
+            return_tensors="pt",
+        ).to(self.model.device)
 
-        outputs = self.pipeline(
-            prompt,
+        outputs = self.model.generate(
+            **inputs,
             max_new_tokens=max_new_tokens,
             temperature=temperature,
-            do_sample=True,
-            pad_token_id=self.pipeline.tokenizer.eos_token_id,
+            do_sample=False,
+            pad_token_id=self.tokenizer.eos_token_id
         )
-        return outputs[0]["generated_text"][len(full_prompt):].strip()
 
+        return self.tokenizer.decode(
+            outputs[0][inputs["input_ids"].shape[-1]:],
+            skip_special_tokens=True
+        ).strip()
 
 
 if __name__ == "__main__":
+    with open('prompts/query_to_json.txt', 'r') as file:
+        query_to_json_prompt = file.read()
+
     queries = [
-        "Convert the following travel plan request into JSON:\nPlan 3 days trip from Seattle to Texas.\nJSON:",
-        "Write a Python function to calculate factorial recursively."
+        "Plan 3 days trip from Seattle to Texas.\nJSON:"
     ]
 
-    llama_llm = LLMWrapper("llama")
+    # Example: Use any model key ("llama", "qwen", "phi")
+    phi_llm = LLMWrapper("qwen")
     for q in queries:
-        print("\n[LLaMA Response]\n", llama_llm.generate(q))
-
-    qwen_llm = LLMWrapper("qwen")
-    for q in queries:
-        print("\n[Qwen Response]\n", qwen_llm.generate(q))
-
-    phi_llm = LLMWrapper("phi")
-    for q in queries:
-        print("\n[Phi Response]\n", phi_llm.generate(q))
+        prompt = (
+            "You are JSON generator so only generate JSON"
+            + query_to_json_prompt
+            + '{' + q + '}\nJSON:\n'
+        )
+        print("\n[Phi Response]\n", phi_llm.generate(prompt))
