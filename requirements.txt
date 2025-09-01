@@ -11,3 +11,6 @@ anthropic
 mistralai==0.1.8
 pandas
 dotenv==0.9.9
+
+torch==2.8.0
+transformers==4.55.4
