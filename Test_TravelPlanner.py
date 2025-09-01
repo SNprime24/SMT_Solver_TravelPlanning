@@ -237,14 +237,17 @@ def pipeline(query, mode, model, index, model_version = None):
     plan_json = ''
     codes = ''
     success = False
-    
+
+    if(model == 'qwen'): qwen_llm = LLMWrapper("qwen")
+    elif(model == 'phi'): phi_llm = LLMWrapper("phi")
+
     try:
         # json generated for postprocess only, not used in inputs to LLMs
         if model == 'gpt': query_json = json.loads(GPT_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n', model_version).replace('```json', '').replace('```', ''))
         elif model == 'claude': query_json = json.loads(Claude_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n').replace('```json', '').replace('```', ''))
         elif model == 'mixtral': query_json = json.loads(Mixtral_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n', 'json').replace('```json', '').replace('```', '')) 
-        elif model == 'qwen': query_json = json.loads(LLMWrapper("qwen").generate("You are JSON generator so only generate JSON" + query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n').replace('```json', '').replace('```', ''))
-        elif model == 'phi': query_json = json.loads(LLMWrapper("phi").generate("You are JSON generator so only generate JSON" + query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n').replace('```json', '').replace('```', ''))
+        elif model == 'qwen': query_json = json.loads(qwen_llm.generate("You are JSON generator so only generate JSON" + query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n').replace('```json', '').replace('```', ''))
+        elif model == 'phi': query_json = json.loads(phi_llm.generate("You are JSON generator so only generate JSON" + query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n').replace('```json', '').replace('```', ''))
         else: ...
         
         with open(path+'plans/' + 'query.txt', 'w') as f:
@@ -260,8 +263,8 @@ def pipeline(query, mode, model, index, model_version = None):
         if model == 'gpt': steps = GPT_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n', model_version)
         elif model == 'claude': steps = Claude_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n')
         elif model == 'mixtral': steps = Mixtral_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n')
-        elif model == 'qwen': steps = LLMWrapper("qwen").generate(constraint_to_step_prompt + query + '\n' + 'Steps:\n')
-        elif model == 'phi': steps = LLMWrapper("phi").generate(constraint_to_step_prompt + query + '\n' + 'Steps:\n')
+        elif model == 'qwen': steps = qwen_llm.generate(constraint_to_step_prompt + query + '\n' + 'Steps:\n')
+        elif model == 'phi': steps = phi_llm.generate(constraint_to_step_prompt + query + '\n' + 'Steps:\n')
         else: ...
         json_step = time.time()
         times.append(json_step - start)
@@ -285,14 +288,18 @@ def pipeline(query, mode, model, index, model_version = None):
                     print('!!!!!!!!!!KEY!!!!!!!!!!\n', key, '\n')
                     prompt = step_to_code_prompts[key]
                     step_key = key
+
+            print(prompt +'\nRespond with python codes only, do not add \ in front of symbols like _ or *.\n Follow the indentation of provided examples carefully, indent after for-loops!\n' +lines)
                     
             start = time.time()
             if model == 'gpt': code = GPT_response(prompt + lines, model_version)
             elif model == 'claude': code = Claude_response(prompt + lines)
             elif model == 'mixtral': code = Mixtral_response(prompt +'\nRespond with python codes only, do not add \ in front of symbols like _ or *.\n Follow the indentation of provided examples carefully, indent after for-loops!\n' +lines, 'code') # '\nRespond json with python codes only\n' 
-            elif model == 'qwen': code = LLMWrapper("qwen").generate(prompt +'\nRespond with python codes only, do not add \ in front of symbols like _ or *.\n Follow the indentation of provided examples carefully, indent after for-loops!\n' +lines, 'code') # '\nRespond json with python codes only\n'
-            elif model == 'phi': code = LLMWrapper("phi").generate(prompt +'\nRespond with python codes only, do not add \ in front of symbols like _ or *.\n Follow the indentation of provided examples carefully, indent after for-loops!\n' +lines, 'code') # '\nRespond json with python codes only\n'
+            elif model == 'qwen': code = qwen_llm.generate(prompt +'\nRespond with python codes only, do not add \ in front of symbols like _ or *.\n Follow the indentation of provided examples carefully, indent after for-loops!\n' +lines) # '\nRespond json with python codes only\n'
+            elif model == 'phi': code = phi_llm.generate(prompt +'\nRespond with python codes only, do not add \ in front of symbols like _ or *.\n Follow the indentation of provided examples carefully, indent after for-loops!\n' +lines) # '\nRespond json with python codes only\n'
             else: ...
+
+            print(code)
             step_code = time.time()
             times.append(step_code - start)
             code = code.replace('```python', '')
