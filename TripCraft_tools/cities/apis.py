@@ -1,4 +1,8 @@
 from pandas import DataFrame
+from TripCraft_tools.accommodations.apis import *
+from TripCraft_tools.restaurants.apis import *
+from TripCraft_tools.googleDistanceMatrix.apis import *
+from TripCraft_tools.flights.apis import *
 
 class Cities:
     def __init__(self ,path="TripCraft_database\\background\citySet_with_states_140.txt") -> None:
