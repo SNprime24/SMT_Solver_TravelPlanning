@@ -183,7 +183,7 @@ class Accommodations:
 
         types_rule_list = ['private_room', 'entire_home', 'shared_room', 'No visitors', 'No smoking', 'No parties', 'No children under 10', 'No pets']
         exists = Select(accommodation_list, index, types_rule_list.index(type))
-        return If(IntVal(index) != -1, exists, BoolVal(False))
+        return If(index != -1, exists, BoolVal(False))
 
 
 
