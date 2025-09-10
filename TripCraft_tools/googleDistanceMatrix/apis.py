@@ -20,7 +20,7 @@ def extract_before_parenthesis(s):
 class GoogleDistanceMatrix:
     def __init__(self, subscription_key: str="") -> None:
         self.gplaces_api_key: str = subscription_key
-        self.data =  pd.read_csv('TripCraft_database\distance_matrix\city_distances_times_full.csv')
+        self.data =  pd.read_csv('TripCraft_database/distance_matrix/city_distances_times_full.csv')
         print("OSM_DistanceMatrix loaded.")
 
 

@@ -8,7 +8,7 @@ import copy
 
 class Flights:
 
-    def __init__(self, path="TripCraft_database\\flights\cleaned_flights_november_2024.csv"):
+    def __init__(self, path="TripCraft_database/flights/cleaned_flights_november_2024.csv"):
         self.path = path
         self.data = None
         self.data = pd.read_csv(self.path).dropna()[['Flight Number', 'Price', 'DepTime', 'ArrTime', 'ActualElapsedTime','FlightDate','OriginCityName','DestCityName','Distance']]

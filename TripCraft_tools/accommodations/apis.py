@@ -19,7 +19,7 @@ def extract_integer_price(pricing_string):
 
 
 class Accommodations:
-    def __init__(self, path="TripCraft_database\\accommodation\cleaned_listings_final_v2.csv"):
+    def __init__(self, path="TripCraft_database/accommodation/cleaned_listings_final_v2.csv"):
         self.path = path
         self.data = self.load_db()
         print(self.data.columns)

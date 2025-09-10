@@ -5,7 +5,7 @@ from TripCraft_tools.googleDistanceMatrix.apis import *
 from TripCraft_tools.flights.apis import *
 
 class Cities:
-    def __init__(self ,path="TripCraft_database\\background\citySet_with_states_140.txt") -> None:
+    def __init__(self ,path="TripCraft_database/background/citySet_with_states_140.txt") -> None:
         self.path = path
         self.load_data()
         print("Cities loaded.")

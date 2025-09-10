@@ -7,7 +7,7 @@ from z3 import *
 
 
 class Attractions:
-    def __init__(self, path='TripCraft_database\\attraction\cleaned_attractions_final.csv'):
+    def __init__(self, path='TripCraft_database/attraction/cleaned_attractions_final.csv'):
         self.path = path
         self.data = self.load_db()
         print(self.data.columns)

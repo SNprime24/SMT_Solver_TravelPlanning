@@ -6,7 +6,7 @@ from utils.func import extract_before_parenthesis
 from z3 import *
 
 class Restaurants:
-    def __init__(self, path="TripCraft_database\\restaurants\cleaned_restaurant_details_2024.csv"):
+    def __init__(self, path="TripCraft_database/restaurants/cleaned_restaurant_details_2024.csv"):
         self.path = path
         self.data = self.load_db()
         print(self.data.columns)
